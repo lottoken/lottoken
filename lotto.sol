@@ -1,4 +1,8 @@
-pragma solidity ^0.4.4;
+
+pragma solidity ^0.4.13;
+
+import "zeppelin-solidity/contracts/token/StandardToken.sol";
+
 
 contract Lotto {
 address[] public participants;
@@ -20,9 +24,14 @@ uint public pool_amount;
 // winner after the Lotto draw 
 address winner;
 
+address public LOTaddress = address(0x96ac21398c8fe3a78c4b9b7cff3d22765b15036d);
+StandardToken public lottok = StandardToken(LOTaddress);
+
+//address LOTaddress=0x96AC21398C8FE3A78C4B9B7CFF3D22765B15036D;
+
 // Organize a Lotto and set various parameters of the Lotto 
 // organizer_contrib: Contribution in micro-Lottokens from the organizer towards the Lotto
-function Lotto(uint lotto_hold_time, uint participant_contribution, address lotto_trigger, uint organizer_contrib) public 
+function Organize(uint lotto_hold_time, uint participant_contribution, address lotto_trigger, uint256 organizer_contrib) public 
 {
     organizer = msg.sender;
     hold_time = lotto_hold_time;
@@ -33,14 +42,23 @@ function Lotto(uint lotto_hold_time, uint participant_contribution, address lott
     // TBD: Tying all this with solidity
     // TBD: Transfer organizer_contrib from the organizer wallet to the contract
     // TBD: Initialize participant array????
+
+//ERC20Token tok = ERC20Token(LOTaddress);
+
+lottok.transferFrom(organizer,this, organizer_contrib);
+
+
 }
 
 // Participate in the Lotto
 // Have to contribute a minimum of contribution_req but can contribute more 
 // Contributing more than the minimum required does not improve your odds
-function participate(uint contribution) public returns (uint) {
+function Participate(uint contribution) public returns (uint) {
     require(contribution >= contribution_req);
     // TBD: Transfer contribution from the participant
+
+lottok.transferFrom(msg.sender,this, contribution);
+
     pool_amount += contribution;
     participants.push(msg.sender);
     return participants.length;
@@ -58,6 +76,8 @@ function draw(uint random_number) public {
     require (random_number >=0 && random_number < (participants.length -1));
     winner = participants[random_number];
     //TBD transfer "pool_amount" funds to winner 
+lottok.transferFrom(this,msg.sender, pool_amount);
+
 }
 
 }
