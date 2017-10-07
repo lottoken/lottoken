@@ -40,12 +40,13 @@ function Organize(uint lotto_hold_time, uint participant_contribution, address l
     pool_amount += organizer_contrib;
     
     // TBD: Tying all this with solidity
+    // TBD: Record current time
     // TBD: Transfer organizer_contrib from the organizer wallet to the contract
     // TBD: Initialize participant array????
 
-//ERC20Token tok = ERC20Token(LOTaddress);
+    //ERC20Token tok = ERC20Token(LOTaddress);
 
-lottok.transferFrom(organizer,this, organizer_contrib);
+    lottok.transferFrom(organizer,this, organizer_contrib);
 
 
 }
@@ -55,9 +56,10 @@ lottok.transferFrom(organizer,this, organizer_contrib);
 // Contributing more than the minimum required does not improve your odds
 function Participate(uint contribution) public returns (uint) {
     require(contribution >= contribution_req);
+    // TBD: check if hold period is over
     // TBD: Transfer contribution from the participant
 
-lottok.transferFrom(msg.sender,this, contribution);
+    lottok.transferFrom(msg.sender,this, contribution);
 
     pool_amount += contribution;
     participants.push(msg.sender);
@@ -76,7 +78,7 @@ function draw(uint random_number) public {
     require (random_number >=0 && random_number < (participants.length -1));
     winner = participants[random_number];
     //TBD transfer "pool_amount" funds to winner 
-lottok.transferFrom(this,msg.sender, pool_amount);
+    lottok.transferFrom(this,winner, pool_amount);
 
 }
 
