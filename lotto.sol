@@ -33,6 +33,8 @@ StandardToken public lottok = StandardToken(LOTaddress);
 // organizer_contrib: Contribution in micro-Lottokens from the organizer towards the Lotto
 function Organize(uint lotto_hold_time, uint participant_contribution, address lotto_trigger, uint256 organizer_contrib) public 
 {
+    require(lottok.allowance(msg.sender, this) >= organizer_contrib);
+    
     organizer = msg.sender;
     hold_time = lotto_hold_time;
     contribution_req = participant_contribution;
@@ -44,10 +46,7 @@ function Organize(uint lotto_hold_time, uint participant_contribution, address l
     // TBD: Transfer organizer_contrib from the organizer wallet to the contract
     // TBD: Initialize participant array????
 
-    //ERC20Token tok = ERC20Token(LOTaddress);
-
     lottok.transferFrom(organizer,this, organizer_contrib);
-
 
 }
 
@@ -55,6 +54,7 @@ function Organize(uint lotto_hold_time, uint participant_contribution, address l
 // Have to contribute a minimum of contribution_req but can contribute more 
 // Contributing more than the minimum required does not improve your odds
 function Participate(uint contribution) public returns (uint) {
+    require(lottok.allowance(msg.sender, this) >= contribution);
     require(contribution >= contribution_req);
     // TBD: check if hold period is over
     // TBD: Transfer contribution from the participant
@@ -79,7 +79,6 @@ function draw(uint random_number) public {
     winner = participants[random_number];
     //TBD transfer "pool_amount" funds to winner 
     lottok.transferFrom(this,winner, pool_amount);
-
 }
 
 }
