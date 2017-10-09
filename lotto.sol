@@ -41,8 +41,11 @@ function get_sta() public constant returns (address)
 
 // Organize a Lotto and set various parameters of the Lotto 
 // organizer_contrib: Contribution in micro-Lottokens from the organizer towards the Lotto
+
 function Organize(uint lotto_hold_time, uint participant_contribution, address lotto_trigger, uint256 organizer_contrib) public 
 {
+    require(lottok.allowance(msg.sender, this) >= organizer_contrib);
+    
     organizer = msg.sender;
     hold_time = lotto_hold_time;
     contribution_req = participant_contribution;
@@ -54,18 +57,17 @@ function Organize(uint lotto_hold_time, uint participant_contribution, address l
 
     lottok.transferFrom(organizer,this, organizer_contrib);
 
-
 }
 
 // Participate in the Lotto
 // Have to contribute a minimum of contribution_req but can contribute more 
 // Contributing more than the minimum required does not improve your odds
 
-function Participate(uint contribution) public returns (uint) 
-{
+function Participate(uint contribution) public returns (uint) {
+    require(lottok.allowance(msg.sender, this) >= contribution);
     require(contribution >= contribution_req);
 
-    // Transfer contribution from the participant
+// Transfer contribution from the participant
     lottok.transferFrom(msg.sender,this, contribution);
 
     pool_amount += contribution;
