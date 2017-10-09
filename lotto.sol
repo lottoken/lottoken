@@ -1,10 +1,9 @@
-
 pragma solidity ^0.4.13;
 
 import "zeppelin-solidity/contracts/token/StandardToken.sol";
 
-
 contract Lotto {
+
 address[] public participants;
 address public organizer;  // person owning this contract and organizing uint
 address public trigger; // person drawing the random numbers and triggering the lotto drawing
@@ -24,10 +23,21 @@ uint public pool_amount;
 // winner after the Lotto draw 
 address winner;
 
-address public LOTaddress = address(0x96ac21398c8fe3a78c4b9b7cff3d22765b15036d);
-StandardToken public lottok = StandardToken(LOTaddress);
+// address of deployed token contract
+address public LOTaddress ;
+StandardToken public lottok;
 
-//address LOTaddress=0x96AC21398C8FE3A78C4B9B7CFF3D22765B15036D;
+//sta = set token address
+function set_sta(address tok_addr) public 
+{
+    lottok = StandardToken(tok_addr);
+    LOTaddress = tok_addr;
+}
+
+function get_sta() public constant returns (address)
+{
+    return LOTaddress;
+}
 
 // Organize a Lotto and set various parameters of the Lotto 
 // organizer_contrib: Contribution in micro-Lottokens from the organizer towards the Lotto
@@ -39,13 +49,10 @@ function Organize(uint lotto_hold_time, uint participant_contribution, address l
     trigger = lotto_trigger;
     pool_amount += organizer_contrib;
     
-    // TBD: Tying all this with solidity
-    // TBD: Transfer organizer_contrib from the organizer wallet to the contract
-    // TBD: Initialize participant array????
+    // Tying all this with solidity
+    // Transfer organizer_contrib from the organizer wallet to the contract
 
-//ERC20Token tok = ERC20Token(LOTaddress);
-
-lottok.transferFrom(organizer,this, organizer_contrib);
+    lottok.transferFrom(organizer,this, organizer_contrib);
 
 
 }
@@ -53,31 +60,71 @@ lottok.transferFrom(organizer,this, organizer_contrib);
 // Participate in the Lotto
 // Have to contribute a minimum of contribution_req but can contribute more 
 // Contributing more than the minimum required does not improve your odds
-function Participate(uint contribution) public returns (uint) {
-    require(contribution >= contribution_req);
-    // TBD: Transfer contribution from the participant
 
-lottok.transferFrom(msg.sender,this, contribution);
+function Participate(uint contribution) public returns (uint) 
+{
+    require(contribution >= contribution_req);
+
+    // Transfer contribution from the participant
+    lottok.transferFrom(msg.sender,this, contribution);
 
     pool_amount += contribution;
     participants.push(msg.sender);
     return participants.length;
+
 }
 
 // returns number of participants currently in the Lotto 
-function num_participants() public constant returns (uint) {
+function num_participants() public constant returns (uint) 
+{
     return participants.length;
 }
 
+function getpo() public constant returns (uint) 
+{
+    return pool_amount;
+}
+
+function getoa() public constant returns (address) 
+{
+    return organizer;
+}
+
+function gettri() public constant returns (address) 
+{
+    return trigger;
+}
+
+
+
 // Draw the lottery and transfer funds to the winner
 // random_number is between 0 and number of participants 
-function draw(uint random_number) public {
+
+function draw(uint random_number) public 
+{
     require (msg.sender == trigger);
-    require (random_number >=0 && random_number < (participants.length -1));
+//  require ( (random_number >=0) && (random_number < (participants.length -1)));
+
     winner = participants[random_number];
-    //TBD transfer "pool_amount" funds to winner 
-lottok.transferFrom(this,msg.sender, pool_amount);
+
+    //transfer "pool_amount" funds to winner 
+    lottok.transfer(winner , pool_amount);
+
+}
+
+
+
+// Test function for winner selection
+function dp(uint random_number) public constant returns (address) 
+{
+    require (msg.sender == trigger);
+
+//    require ( (random_number >=0) && (random_number < (participants.length -1)));
+
+    winner = participants[random_number];
+    return winner;
 
 }
 
 }
+
