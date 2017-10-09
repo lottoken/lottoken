@@ -105,7 +105,7 @@ function gettri() public constant returns (address)
 function draw(uint random_number) public 
 {
     require (msg.sender == trigger);
-//  require ( (random_number >=0) && (random_number < (participants.length -1)));
+    require ( (random_number >=0) && (random_number < (participants.length)));
 
     winner = participants[random_number];
 
