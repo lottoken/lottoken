@@ -50,7 +50,7 @@ contract('Lotto', (accounts) => {
     assert.equal(new BigNumber(totalSuppy).toString(), new BigNumber(13000).toString(), 'Initial supply should be 13 Thousand')
 
     let symbol = await token.symbol()
-    assert.equal(symbol, 'MOTT')
+    assert.equal(symbol, 'LOTT')
 
     let name = await token.name()
     assert.equal(name, 'TutorialToken')
