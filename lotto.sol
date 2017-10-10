@@ -60,6 +60,7 @@ function get_sta() public constant returns (address)
 function Organize(uint lotto_hold_time, uint participant_contribution, address lotto_trigger, uint256 organizer_contrib) public 
 {
     require(lottok.allowance(msg.sender, this) >= organizer_contrib);
+    // TBD add check if organizer has already not started a lottery
     
     all_lot[msg.sender].organizer = msg.sender;
     all_lot[msg.sender].hold_time = lotto_hold_time;
@@ -80,6 +81,7 @@ function Organize(uint lotto_hold_time, uint participant_contribution, address l
 function Participate(uint contribution, address org) public returns (uint) {
 
     require(lottok.allowance(msg.sender, this) >= contribution);
+    //TBD check if there is a lottery record with "org"
     require(all_lot[org].pool_amount > 0 );
     require(contribution >= all_lot[org].contribution_req);
     
@@ -94,20 +96,24 @@ function Participate(uint contribution, address org) public returns (uint) {
 
 // returns number of participants currently in the Lotto 
 function num_participants(address org) public constant returns (uint) {
+    //TBD check if there is a lottery record with "org"
     return all_lot[org].participants.length;
 }
 
 function getpo(address org) public constant returns (uint) {
+    //TBD check if there is a lottery record with "org"
     return all_lot[org].pool_amount;
 }
 
 //get organizer address
 
 function getoa(address org) public constant returns (address) {
+    //TBD check if there is a lottery record with "org"
     return all_lot[org].organizer;
 }
 
 function gettri(address org) public constant returns (address) {
+    //TBD check if there is a lottery record with "org"
     return all_lot[org].trigger;
 }
 
@@ -116,16 +122,15 @@ function gettri(address org) public constant returns (address) {
 // Draw the lottery and transfer funds to the winner
 // random_number is between 0 and number of participants 
 function draw(uint random_number, address org) public {
+    //TBD check if there is a lottery record with "org"
     require(all_lot[org].pool_amount >0);
     require (msg.sender == all_lot[org].trigger);
-//    require ( (random_number >=0) && (random_number < (participants.length -1)));
+    require ( (random_number >=0) && (random_number < (participants.length)));
 
     address winner = all_lot[org].participants[random_number];
 
-    //TBD transfer "pool_amount" funds to winner 
-
-//lottok.transferFrom(this, winner , pool_amount);
-lottok.transfer(winner , all_lot[org].pool_amount);
+    //transfer "pool_amount" funds to winner 
+    lottok.transfer(winner , all_lot[org].pool_amount);
 
  //  return winner;
 
@@ -136,19 +141,14 @@ lottok.transfer(winner , all_lot[org].pool_amount);
 // Draw the lottery and transfer funds to the winner
 // random_number is between 0 and number of participants 
 function dp(uint random_number, address org) public constant returns (address) {
-
+    //TBD check if there is a lottery record with "org"
     require(all_lot[org].pool_amount > 0 );
     require (msg.sender == all_lot[org].trigger);
-
-//    require ( (random_number >=0) && (random_number < (participants.length -1)));
+    require ( (random_number >=0) && (random_number < (participants.length)));
 
     address winner = all_lot[org].participants[random_number];
 
-return winner;
-
-    //TBD transfer "pool_amount" funds to winner 
-//lottok.transferFrom(this, winner , pool_amount);
-
+    return winner;
 }
 
 }
