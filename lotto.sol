@@ -142,7 +142,7 @@ function draw(uint random_number, address org) public {
     require(all_lot[org].contest_running ==true);
     require(all_lot[org].pool_amount >0);
     require (msg.sender == all_lot[org].trigger);
-    require ( (random_number >=0) && (random_number < (participants.length)));
+    require ( (random_number >=0) && (random_number < (all_lot[org].participants.length)));
 
     address winner = all_lot[org].participants[random_number];
 
@@ -167,7 +167,7 @@ function dp(uint random_number, address org) public constant returns (address) {
     //TBD check if there is a lottery record with "org"
     require(all_lot[org].pool_amount > 0 );
     require (msg.sender == all_lot[org].trigger);
-    require ( (random_number >=0) && (random_number < (participants.length)));
+    require ( (random_number >=0) && (random_number < (all_lot[org].participants.length)));
 
     address winner = all_lot[org].participants[random_number];
 
