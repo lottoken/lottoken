@@ -46,11 +46,12 @@ contract('Lotto', (accounts) => {
     //console.log('results', results)
 
 
+
     let totalSuppy = await token.totalSupply()
     assert.equal(new BigNumber(totalSuppy).toString(), new BigNumber(13000).toString(), 'Initial supply should be 13 Thousand')
 
     let symbol = await token.symbol()
-    assert.equal(symbol, 'LOTT')
+    assert.equal(symbol, 'MOTT')
 
     let name = await token.name()
     assert.equal(name, 'TutorialToken')
@@ -98,6 +99,10 @@ contract('Lotto', (accounts) => {
 // organize contest and seed with 7 tokens, but participants must contribute 5 tokens each 
     await token.approve( lto.address , 7 , {from: o})
     await lto.Organize(30,5,t,7, {from: o})
+
+//trying to organize a second time from the same organizer while a contest is running should fail
+//    await token.approve( lto.address , 1 , {from: o})
+//    await lto.Organize(30,1,t,1, {from: o})
 
 
 // lets organize our second contest - p3 is our second organizer
@@ -187,7 +192,6 @@ contract('Lotto', (accounts) => {
     assert.equal(fmt2,26);
 
 // ok draw for 2nd contest now
-// lucky guy - wins both contests !!!!
 
     let win2= await lto.dp(0,p3, {from: t})
 
@@ -200,6 +204,21 @@ contract('Lotto', (accounts) => {
 // wins 4 tokens + 4 leftover = 8
 
     assert.equal(fmt4,8);
+
+
+//make sure only we can call set_sta - commenting out since following test should fail
+//    await lto.set_sta(p2, {from: t})
+    let still_the_same = await lto.get_sta()
+    assert.equal(token.address, still_the_same)
+
+//trying to organize a second time from the same organizer after contest has ended
+    await token.approve( lto.address , 1 , {from: o})
+    await lto.Organize(30,1,t,1, {from: o})
+    await token.approve( lto.address , 1 , {from: p})
+    await lto.Participate ( 1 , o, {from :p})
+    await token.approve( lto.address , 1 , {from: p2})
+    await lto.Participate ( 1 , o, {from :p2})
+    await lto.draw(1, o, {from: t})
 
   })
 })

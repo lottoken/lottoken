@@ -4,7 +4,6 @@ import "zeppelin-solidity/contracts/token/StandardToken.sol";
 
 /* A single organizer address cannot have more than 1 contest running simulatenously */
 /* A single winner of each contest */
-/* need to clean up after contest ends */
 /* Need to port to SafeMath */
 
 contract Lotto {
@@ -32,17 +31,28 @@ struct one_lot {
 // time when this Lotto was created
     uint creation_time;
 
+// content running 
+    bool contest_running;
+
 
 }
 
 mapping (address => one_lot) public all_lot;
 
-address public LOTaddress ;
-StandardToken public lottok;
+address LOTaddress ;
+StandardToken lottok;
+address must_be_from;
+bool is_first_time = true;
 
 //sta = set token address
 function set_sta(address tok_addr) public 
 {
+    if( is_first_time == true)
+    {
+	is_first_time = false;
+        must_be_from = msg.sender;
+    }
+    require(must_be_from == msg.sender);
     lottok = StandardToken(tok_addr);
     LOTaddress = tok_addr;
 }
@@ -59,13 +69,21 @@ function get_sta() public constant returns (address)
 
 function Organize(uint lotto_hold_time, uint participant_contribution, address lotto_trigger, uint256 organizer_contrib) public 
 {
+
+
+    require(all_lot[msg.sender].contest_running == false);
     require(lottok.allowance(msg.sender, this) >= organizer_contrib);
+    require(participant_contribution > 0);
+    require(lotto_hold_time > 0);
+    require(organizer_contrib > 0);
+   
     
+    all_lot[msg.sender].contest_running = true;
     all_lot[msg.sender].organizer = msg.sender;
     all_lot[msg.sender].hold_time = lotto_hold_time;
     all_lot[msg.sender].contribution_req = participant_contribution;
     all_lot[msg.sender].trigger = lotto_trigger;
-    all_lot[msg.sender].pool_amount += organizer_contrib;
+    all_lot[msg.sender].pool_amount = organizer_contrib;
     
     // Transfer organizer_contrib from the organizer wallet to the contract
 
@@ -116,18 +134,24 @@ function gettri(address org) public constant returns (address) {
 // Draw the lottery and transfer funds to the winner
 // random_number is between 0 and number of participants 
 function draw(uint random_number, address org) public {
+
+    require(all_lot[org].contest_running ==true);
     require(all_lot[org].pool_amount >0);
     require (msg.sender == all_lot[org].trigger);
+
 //    require ( (random_number >=0) && (random_number < (participants.length -1)));
 
     address winner = all_lot[org].participants[random_number];
 
-    //TBD transfer "pool_amount" funds to winner 
+//transfer "pool_amount" funds to winner 
 
-//lottok.transferFrom(this, winner , pool_amount);
-lottok.transfer(winner , all_lot[org].pool_amount);
+    lottok.transfer(winner , all_lot[org].pool_amount);
 
- //  return winner;
+//clean up
+
+    all_lot[org].contest_running = false;
+    all_lot[org].participants.length = 0;
+
 
 }
 
@@ -146,8 +170,6 @@ function dp(uint random_number, address org) public constant returns (address) {
 
 return winner;
 
-    //TBD transfer "pool_amount" funds to winner 
-//lottok.transferFrom(this, winner , pool_amount);
 
 }
 
