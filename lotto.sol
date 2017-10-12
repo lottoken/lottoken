@@ -8,6 +8,11 @@ import "zeppelin-solidity/contracts/token/StandardToken.sol";
 
 contract Lotto {
 
+/* Generates a random number from 0 to 100 based on the last block hash */
+function randomGen(uint seed, uint modulo) constant returns (uint) {
+    return(uint(sha3(block.blockhash(block.number-1), seed )) % modulo);
+}
+
 
 struct one_lot {
     address organizer;  // person owning this contract and organizing uint
@@ -33,6 +38,9 @@ struct one_lot {
 
 // content running 
     bool contest_running;
+
+// random draw
+    uint draw;
 
 
 }
@@ -154,6 +162,7 @@ function draw(uint random_number, address org) public {
 
     all_lot[org].contest_running = false;
     all_lot[org].participants.length = 0;
+    all_lot[org].draw = randomGen(uint(msg.sender), uint(all_lot[org].participants.length));
 
 
 
