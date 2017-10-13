@@ -8,8 +8,10 @@ import "zeppelin-solidity/contracts/token/StandardToken.sol";
 
 contract Lotto {
 
+uint public scratchpad; // TBD make this non-public
 /* Generates a random number from 0 to 100 based on the last block hash */
 function randomGen(uint seed, uint modulo) constant returns (uint) {
+    scratchpad = uint(sha3(block.blockhash(block.number-1), seed )) % modulo;
     return(uint(sha3(block.blockhash(block.number-1), seed )) % modulo);
 }
 
@@ -145,6 +147,7 @@ function gettri(address org) public constant returns (address) {
 
 // Draw the lottery and transfer funds to the winner
 // random_number is between 0 and number of participants 
+// TBD remove this and have people only use draw_random
 function draw(uint random_number, address org) public {
 
     require(all_lot[org].contest_running ==true);
@@ -165,6 +168,28 @@ function draw(uint random_number, address org) public {
     all_lot[org].draw = randomGen(uint(msg.sender), uint(all_lot[org].participants.length));
 
 
+
+}
+
+
+// Generate random number, Draw the lottery and transfer funds to the winner
+function draw_random(address org) public {
+
+    require(all_lot[org].contest_running ==true);
+    require(all_lot[org].pool_amount >0);
+    require (msg.sender == all_lot[org].trigger);
+
+    all_lot[org].draw = randomGen(uint(msg.sender), uint(all_lot[org].participants.length));
+    address winner = all_lot[org].participants[all_lot[org].draw];
+
+//transfer "pool_amount" funds to winner 
+
+    lottok.transfer(winner , all_lot[org].pool_amount);
+
+//clean up
+
+    all_lot[org].contest_running = false;
+    all_lot[org].participants.length = 0;
 
 }
 
