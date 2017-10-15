@@ -147,11 +147,11 @@ function gettri(address org) public constant returns (address) {
 }
 
 
-
+/*
 // Draw the lottery and transfer funds to the winner
 // random_number is between 0 and number of participants 
 // TBD remove this and have people only use draw_random
-function draw(uint random_number, address org) public {
+function draw(uint random_number, address org) {
 
     require(all_lot[org].contest_running ==true);
     require(all_lot[org].pool_amount >0);
@@ -173,6 +173,7 @@ function draw(uint random_number, address org) public {
 
 
 }
+*/
 
 
 // Generate random number, Draw the lottery and transfer funds to the winner
@@ -197,10 +198,10 @@ function draw_random(address org) public {
 }
 
 
-
+/*
 // Draw the lottery and transfer funds to the winner
 // random_number is between 0 and number of participants 
-function dp(uint random_number, address org) public constant returns (address) {
+function dp(uint random_number, address org) constant returns (address) {
     //TBD check if there is a lottery record with "org"
     require(all_lot[org].pool_amount > 0 );
     require (msg.sender == all_lot[org].trigger);
@@ -210,6 +211,7 @@ function dp(uint random_number, address org) public constant returns (address) {
 
     return winner;
 }
+*/
 
 }
 
