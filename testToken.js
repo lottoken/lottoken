@@ -1,17 +1,22 @@
 /* global artifacts, contract, it, assert */
 var BigNumber = require('bignumber.js')
-var TutorialToken = artifacts.require('./TutorialToken.sol')
+var LottokenCoin = artifacts.require('./LottokenCoin.sol')
 var Lotto = artifacts.require('./Lotto.sol')
 
-const assertJump = require('./helpers/assertJump')
+//const assertJump = require('./helpers/assertJump')
 
+
+function sleep(ms) { 
+
+return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 /**
  * Some sanity tests against the Zeppelin standard token contract
  */
-contract('TutorialToken', (accounts) => {
+contract('LottokenCoin', (accounts) => {
   it('should deploy', () => {
-    return TutorialToken.deployed()
+    return LottokenCoin.deployed()
     .then((instance) => {
       assert.notEqual(instance, null, 'Instance should not be null')
     })
@@ -29,7 +34,7 @@ contract('Lotto', (accounts) => {
 
   it('should have correct initial values set.', async () => {
 
-    let token = await TutorialToken.deployed()
+    let token = await LottokenCoin.deployed()
 
 
     let lto = await Lotto.deployed()
@@ -48,16 +53,16 @@ contract('Lotto', (accounts) => {
 
 
     let totalSuppy = await token.totalSupply()
-    assert.equal(new BigNumber(totalSuppy).toString(), new BigNumber(13000).toString(), 'Initial supply should be 13 Thousand')
+    assert.equal(new BigNumber(totalSuppy).toString(), new BigNumber(1000000000000).toString(), 'Initial supply should be 1 trillion - 12 zeros')
 
     let symbol = await token.symbol()
-    assert.equal(symbol, 'MOTT')
+    assert.equal(symbol, 'LOTT')
 
     let name = await token.name()
-    assert.equal(name, 'TutorialToken')
+    assert.equal(name, 'LOTTOKEN COIN')
 
     let decimals = await token.decimals()
-    assert.equal(decimals, 1)
+    assert.equal(decimals, 0)
 
 
 
@@ -163,47 +168,54 @@ contract('Lotto', (accounts) => {
     console.log('2nd contest pool amount', fmt3)
 
 
-/*
-    let tri = await lto.gettri()
+//    let tri = await lto.gettri()
 //    console.log('trigger address', tri)
-    assert.equal(t, tri)
+//    assert.equal(t, tri)
 
-    let win= await lto.dp(2,{from: t})
-    console.log('winner address', win)
-    console.log('Participant 1 ', p)
-    console.log('Participant 2 ', p2)
-    console.log('Participant 2 ', p3)
+//    let win= await lto.dp(2,{from: t})
+//    console.log('winner address', win)
+//    console.log('Participant 1 ', p)
+//    console.log('Participant 2 ', p2)
+//    console.log('Participant 2 ', p3)
 
-*/
 
 // ok draw for 1st contest now
 
 
-    let win= await lto.dp(1,o, {from: t})
+    let win3= await lto.dp(1,o, {from: t})
 
-    await lto.draw(1,o, {from: t})
+console.log('BEFORE FIRST CONTEST')
+console.log('Balances o: ',new BigNumber(await token.balanceOf(o)).toString(),'p :', new BigNumber(await token.balanceOf(p)).toString(), 'p2 :',new BigNumber(await token.balanceOf(p2)).toString(), 'p3 :',new BigNumber(await token.balanceOf(p3)).toString() )
 
-    let winreport = await token.balanceOf(win)
-    let fmt2 = new BigNumber(winreport).toString()
-    console.log('1st contest winner total tokens', fmt2)
+    await lto.draw_random(o, {from: t})
+
+console.log('AFTER FIRST CONTEST')
+console.log('Balances o: ',new BigNumber(await token.balanceOf(o)).toString(),'p :', new BigNumber(await token.balanceOf(p)).toString(), 'p2 :',new BigNumber(await token.balanceOf(p2)).toString(), 'p3 :',new BigNumber(await token.balanceOf(p3)).toString() )
+
+//    let winreport = await token.balanceOf(win3)
+//    let fmt2 = new BigNumber(winreport).toString()
+//    console.log('1st contest winner total tokens', fmt2)
 
 // wins 22 tokens + 4 leftover = 26
 
-    assert.equal(fmt2,26);
+//    assert.equal(fmt2,26);
 
 // ok draw for 2nd contest now
 
-    let win2= await lto.dp(0,p3, {from: t})
+//    let win2= await lto.dp(0,p3, {from: t})
 
-    await lto.draw(0, p3, {from: t})
+    await lto.draw_random(p3, {from: t})
 
-    let winreport2 = await token.balanceOf(win2)
-    let fmt4 = new BigNumber(winreport2).toString()
-    console.log('2nd contest winner total tokens', fmt4)
+console.log('AFTER SECOND CONTEST')
+console.log('Balances o: ',new BigNumber(await token.balanceOf(o)).toString(),'p :', new BigNumber(await token.balanceOf(p)).toString(), 'p2 :',new BigNumber(await token.balanceOf(p2)).toString(), 'p3 :',new BigNumber(await token.balanceOf(p3)).toString() )
+
+//    let winreport2 = await token.balanceOf(win2)
+//    let fmt4 = new BigNumber(winreport2).toString()
+//    console.log('2nd contest winner total tokens', fmt4)
 
 // wins 4 tokens + 4 leftover = 8
 
-    assert.equal(fmt4,8);
+//    assert.equal(fmt4,8);
 
 
 //make sure only we can call set_sta - commenting out since following test should fail
@@ -213,15 +225,29 @@ contract('Lotto', (accounts) => {
 
 //trying to organize a second time from the same organizer after contest has ended
     await token.approve( lto.address , 1 , {from: o})
-    await lto.Organize(30,1,t,1, {from: o})
+    await lto.Organize(3,1,t,1, {from: o})
     await token.approve( lto.address , 1 , {from: p})
     await lto.Participate ( 1 , o, {from :p})
     await token.approve( lto.address , 1 , {from: p2})
-    await lto.Participate ( 1 , o, {from :p2})
-    await lto.draw(1, o, {from: t})
+
+//to test timeout - uncomment below to make the test fail
+//await sleep(3000);
+
+await lto.Participate ( 1 , o, {from :p2})
+await lto.draw_random(o, {from: t})
+
+
+console.log('AFTER THIRD CONTEST')
+console.log('Balances o: ',new BigNumber(await token.balanceOf(o)).toString(),'p :', new BigNumber(await token.balanceOf(p)).toString(), 'p2 :',new BigNumber(await token.balanceOf(p2)).toString(), 'p3 :',new BigNumber(await token.balanceOf(p3)).toString() )
 
   })
+
+
+
 })
 
 
+
+
 })
+
