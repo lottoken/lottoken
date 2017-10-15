@@ -20,14 +20,15 @@ struct one_lot {
     address organizer;  // person owning this contract and organizing uint
     address trigger; // person drawing the random numbers and triggering the lotto drawing
 
-// amount of micro-Lottokens (1 Lottoken = 1000000 micro-Lottokens) each participant should provide
+// amount of Lottokens (1 Lottoken = 1000000 Lottokens) each participant should provide
     uint contribution_req;
 
-// Span of open period in micro seconds since the Lotto contract creation  to let participants join
+// Span of open period in seconds since the Lotto contract creation  to let participants join
     uint hold_time;
+    uint timeout; // time when participation will close
 
 
-// lotto pool amount in micro-Lottokens
+// lotto pool amount in Lottokens
     uint pool_amount;
 
 // winner after the Lotto draw 
@@ -75,7 +76,7 @@ function get_sta() public constant returns (address)
 }
 
 // Organize a Lotto and set various parameters of the Lotto 
-// organizer_contrib: Contribution in micro-Lottokens from the organizer towards the Lotto
+// organizer_contrib: Contribution in Lottokens from the organizer towards the Lotto
 
 function Organize(uint lotto_hold_time, uint participant_contribution, address lotto_trigger, uint256 organizer_contrib) public 
 {
@@ -90,6 +91,7 @@ function Organize(uint lotto_hold_time, uint participant_contribution, address l
     all_lot[msg.sender].contest_running = true;
     all_lot[msg.sender].organizer = msg.sender;
     all_lot[msg.sender].hold_time = lotto_hold_time;
+    all_lot[msg.sender].timeout = now + lotto_hold_time;
     all_lot[msg.sender].contribution_req = participant_contribution;
     all_lot[msg.sender].trigger = lotto_trigger;
     all_lot[msg.sender].pool_amount = organizer_contrib;
@@ -110,6 +112,7 @@ function Participate(uint contribution, address org) public returns (uint) {
     //TBD check if there is a lottery record with "org"
     require(all_lot[org].pool_amount > 0 );
     require(contribution >= all_lot[org].contribution_req);
+    require(now < all_lot[org].timeout);
     
 // Transfer contribution from the participant
 
